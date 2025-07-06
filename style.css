@@ -1,0 +1,73 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    text-align: center;
+    background-color: #1a1a1a; /* Near-black background */
+    color: #ffffff; /* White text for readability */
+}
+h1, h2, h3 {
+    color: #ff3333; /* Red for headings */
+}
+textarea {
+    width: 80%;
+    height: 300px;
+    margin: 10px auto;
+    font-family: monospace;
+    font-size: 12px;
+    background-color: #000000; /* Black background */
+    color: #ffffff; /* White text */
+    border: 2px solid #ff3333; /* Red border */
+    padding: 10px;
+}
+table {
+    width: 80%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    background-color: #000000; /* Black table background */
+}
+th, td {
+    border: 1px solid #ff3333; /* Red borders */
+    padding: 8px;
+    text-align: center;
+    color: #ffffff; /* White text */
+}
+th {
+    background-color: #ff3333; /* Red header background */
+    color: #ffffff; /* White text for contrast */
+}
+tr:nth-child(even) {
+    background-color: #2e2e2e; /* Dark gray for alternating rows */
+}
+button {
+    background-color: #ff3333; /* Red button */
+    color: #000000; /* Black text */
+    border: 2px solid #000000; /* Black border */
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+button:hover {
+    background-color: #cc0000; /* Darker red on hover */
+}
+#error {
+    color: #ff6666; /* Brighter red for error messages */
+    font-weight: bold;
+}
+.course-details {
+    width: 80%;
+    margin: 20px auto;
+    text-align: left;
+    color: #ffffff; /* White text */
+}
+.course-details ul {
+    background-color: #000000; /* Black background for course list */
+    padding: 15px;
+    border: 1px solid #ff3333; /* Red border */
+}
+canvas {
+    max-width: 600px;
+    margin: 20px auto;
+    border: 2px solid #ff3333; /* Red border around chart */
+    background-color: #1a1a1a; /* Match body background */
+}
