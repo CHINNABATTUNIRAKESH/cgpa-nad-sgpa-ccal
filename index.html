@@ -11,11 +11,6 @@
     <h1>SGPA & CGPA Calculator</h1>
     <p>Paste tab-separated or comma-separated data below (edit or replace the default data):</p>
     <textarea id="dataInput">
-
-
-        PLACE YOU MYCGPA TABLE FOM YOU PORTAL 
-    DOWN FORMAT ONLY TO GET THE OUTPUT 
-    
 #	University Id	Student Name	Course Code	Course Name	Grade	Grade Point	Credits	Promotion	Reg Academic Year	Reg Sem
     </textarea>
     <br>
@@ -42,7 +37,7 @@
         function parseData(inputText) {
             const lines = inputText.trim().split('\n');
             const headers = lines[0].split('\t').map(h => h.trim());
-            const requiredColumns = ['Reg Academic Year', 'Reg Sem', 'Credits', 'Grade', 'Course Name', 'University Id'];
+            const requiredColumns = ['Reg Academic Year', 'Reg Sem', 'Credits', 'Grade', 'Course Name', 'University Id', 'Course Code'];
             
             // Check if all required columns are present
             if (!requiredColumns.every(col => headers.includes(col))) {
@@ -51,6 +46,7 @@
 
             const data = [];
             let universityId = null;
+            const courseSet = new Set(); // To track unique courses per semester
 
             for (let i = 1; i < lines.length; i++) {
                 const values = lines[i].split('\t').map(v => v.trim());
@@ -65,6 +61,13 @@
                 } else if (row['University Id'] !== universityId) {
                     throw new Error(`University ID mismatch at row ${i + 1}. Expected "${universityId}", found "${row['University Id']}". All rows must have the same University ID.`);
                 }
+
+                // Check for duplicate courses (same Course Code, Academic Year, and Semester)
+                const courseKey = `${row['Course Code']}_${row['Reg Academic Year']}_${row['Reg Sem']}`;
+                if (courseSet.has(courseKey)) {
+                    throw new Error(`Duplicate course entry found at row ${i + 1}: Course Code "${row['Course Code']}" in ${row['Reg Academic Year']} ${row['Reg Sem']}.`);
+                }
+                courseSet.add(courseKey);
 
                 data.push(row);
             }
