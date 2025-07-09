@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SGPA & CGPA Calculator</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,10 +14,11 @@
     </textarea>
     <br>
     <button onclick="calculateGPA()">Calculate</button>
+    <a href="graph.html" class="trend-button">View SGPA Trend</a>
     <div id="error"></div>
     <div id="cgpa-result"><h2>Overall CGPA: <span id="cgpa-value">N/A</span></h2></div>
     <div id="result"></div>
-    <canvas id="sgpaChart"></canvas>
+    <div id="non-promoted-subjects"><h2>Non-Promoted Subjects (Promotion ≠ P)</h2></div>
     <div id="course-details"></div>
 
     <script>
@@ -37,7 +37,7 @@
         function parseData(inputText) {
             const lines = inputText.trim().split('\n');
             const headers = lines[0].split('\t').map(h => h.trim());
-            const requiredColumns = ['Reg Academic Year', 'Reg Sem', 'Credits', 'Grade', 'Course Name', 'University Id', 'Course Code'];
+            const requiredColumns = ['Reg Academic Year', 'Reg Sem', 'Credits', 'Grade', 'Course Name', 'University Id', 'Course Code', 'Promotion'];
             
             // Check if all required columns are present
             if (!requiredColumns.every(col => headers.includes(col))) {
@@ -86,10 +86,12 @@
             const cgpaResultDiv = document.getElementById('cgpa-value');
             const resultDiv = document.getElementById('result');
             const courseDetailsDiv = document.getElementById('course-details');
+            const nonPromotedDiv = document.getElementById('non-promoted-subjects');
             errorDiv.innerHTML = '';
             cgpaResultDiv.innerHTML = 'N/A';
             resultDiv.innerHTML = '';
             courseDetailsDiv.innerHTML = '';
+            nonPromotedDiv.innerHTML = '<h2>Non-Promoted Subjects (Promotion ≠ P)</h2>';
 
             try {
                 if (!dataInput.trim()) {
@@ -115,9 +117,13 @@
                 let totalGradePoints = 0;
                 let tableHTML = '<table><tr><th>Academic Year</th><th>Semester</th><th>SGPA</th><th>Earned Credits</th><th>Registered Credits</th></tr>';
                 let courseDetailsHTML = '<h2>Course Details</h2>';
+                let nonPromotedHTML = '<table><tr><th>Academic Year</th><th>Semester</th><th>Course Code</th><th>Course Name</th><th>Grade</th><th>Credits</th><th>Promotion</th></tr>';
                 const chartData = { labels: [], sgpas: [], yearTotals: {}, yearCredits: {}, yearRegisteredCredits: {} };
 
-                // Calculate SGPA, earned credits, and registered credits for each semester and year
+                // Track non-promoted subjects
+                let hasNonPromoted = false;
+
+                // Calculate SGPA, earned credits, registered credits, and collect non-promoted subjects
                 for (const year in years) {
                     let yearCredits = 0;
                     let yearRegisteredCredits = 0;
@@ -133,6 +139,7 @@
                             const credits = parseFloat(course['Credits']) || 0;
                             const grade = course['Grade']?.toUpperCase();
                             const courseName = course['Course Name'] || 'Unknown Course';
+                            const promotion = course['Promotion'] || 'N/A';
 
                             // Add to registered credits (all valid credit values)
                             if (!isNaN(credits)) {
@@ -141,6 +148,12 @@
 
                             // Add to course details
                             courseDetailsHTML += `<li>${courseName}: Grade=${grade || 'N/A'}, Credits=${credits}, Grade Point=${gradePoints[grade] || 'N/A'}</li>`;
+
+                            // Add to non-promoted subjects table if Promotion is not 'P'
+                            if (promotion !== 'P' && promotion !== '') {
+                                hasNonPromoted = true;
+                                nonPromotedHTML += `<tr><td>${year}</td><td>${semester}</td><td>${course['Course Code']}</td><td>${courseName}</td><td>${grade || 'N/A'}</td><td>${credits}</td><td>${promotion}</td></tr>`;
+                            }
 
                             // Only include credits with valid grades for GPA calculation
                             if (!isNaN(credits) && credits > 0 && grade in gradePoints) {
@@ -176,53 +189,32 @@
                     }
                 }
 
-                // Calculate and display CGPA
+                // Finalize tables
                 const cgpa = totalCredits > 0 ? (totalGradePoints / totalCredits).toFixed(2) : 'N/A';
                 cgpaResultDiv.innerHTML = cgpa;
                 tableHTML += `<tr><td colspan="2"><b>Total</b></td><td><b>${cgpa}</b></td><td><b>${totalCredits}</b></td><td><b>${totalRegisteredCredits}</b></td></tr>`;
-
-                // Add yearly SGPA, earned credits, and registered credits to table
                 tableHTML += '<tr><th colspan="5">Yearly SGPA</th></tr>';
                 for (const year in chartData.yearTotals) {
                     tableHTML += `<tr><td>${year}</td><td>All Semesters</td><td>${chartData.yearTotals[year]}</td><td>${chartData.yearCredits[year]}</td><td>${chartData.yearRegisteredCredits[year]}</td></tr>`;
                 }
                 tableHTML += '</table>';
 
+                // Finalize non-promoted subjects table
+                nonPromotedHTML += '</table>';
+                if (!hasNonPromoted) {
+                    nonPromotedHTML = '<p>No subjects found with Promotion status other than P.</p>';
+                }
+
+                // Update HTML content
                 resultDiv.innerHTML = tableHTML;
                 courseDetailsDiv.innerHTML = courseDetailsHTML;
+                nonPromotedDiv.innerHTML += nonPromotedHTML;
 
-                // Render SGPA chart
-                const ctx = document.getElementById('sgpaChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: chartData.labels,
-                        datasets: [{
-                            label: 'SGPA per Semester',
-                            data: chartData.sgpas,
-                            backgroundColor: 'rgba(255, 51, 51, 0.6)', /* Red bars */
-                            borderColor: '#000000', /* Black border */
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                max: 10,
-                                title: { display: true, text: 'SGPA', color: '#ffffff' },
-                                ticks: { color: '#ffffff' } /* White ticks for dark theme */
-                            },
-                            x: {
-                                title: { display: true, text: 'Semester', color: '#ffffff' },
-                                ticks: { color: '#ffffff' } /* White ticks */
-                            }
-                        },
-                        plugins: {
-                            title: { display: true, text: 'SGPA by Semester', color: '#ff3333' } /* Red title */
-                        }
-                    }
-                });
+                // Store chart data in sessionStorage for graph.html
+                sessionStorage.setItem('chartData', JSON.stringify({
+                    labels: chartData.labels,
+                    sgpas: chartData.sgpas
+                }));
             } catch (error) {
                 errorDiv.innerHTML = 'Error processing data: ' + error.message;
             }
