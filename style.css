@@ -38,7 +38,7 @@ th {
 tr:nth-child(even) {
     background-color: #2e2e2e; /* Dark gray for alternating rows */
 }
-button {
+button, .trend-button, .back-button {
     background-color: #ff3333; /* Red button */
     color: #000000; /* Black text */
     border: 2px solid #000000; /* Black border */
@@ -46,13 +46,31 @@ button {
     font-size: 16px;
     cursor: pointer;
     transition: background-color 0.3s;
+    text-decoration: none;
+    display: inline-block;
+    border-radius: 5px;
 }
-button:hover {
+button:hover, .trend-button:hover, .back-button:hover {
     background-color: #cc0000; /* Darker red on hover */
 }
-#error {
+#chartType {
+    padding: 8px;
+    margin: 10px;
+    background-color: #000000; /* Black background */
+    color: #ffffff; /* White text */
+    border: 2px solid #ff3333; /* Red border */
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+}
+#chartType:focus {
+    outline: none;
+    border-color: #cc0000; /* Darker red on focus */
+}
+#error, #chart-error {
     color: #ff6666; /* Brighter red for error messages */
     font-weight: bold;
+    margin: 10px 0;
 }
 .course-details {
     width: 80%;
@@ -65,9 +83,17 @@ button:hover {
     padding: 15px;
     border: 1px solid #ff3333; /* Red border */
 }
-canvas {
-    max-width: 600px;
+.chart-container {
+    width: 100%;
+    max-width: 1000px; /* Constrain max width */
+    min-width: 600px; /* Prevent shrinking below 600px */
+    height: 600px; /* Fixed height */
+    min-height: 600px; /* Ensure height doesn't shrink */
     margin: 20px auto;
+}
+#sgpaChart {
+    width: 100% !important; /* Fill container */
+    height: 100% !important; /* Fill container */
     border: 2px solid #ff3333; /* Red border around chart */
     background-color: #1a1a1a; /* Match body background */
 }
