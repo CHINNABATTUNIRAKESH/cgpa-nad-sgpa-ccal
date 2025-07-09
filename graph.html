@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGPA Trend</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>SGPA Trend</h1>
+    <a href="index.html" class="back-button">Back to Calculator</a>
+    <div>
+        <label for="chartType">Select Chart Type: </label>
+        <select id="chartType" onchange="renderChart()">
+            <option value="bar">Bar Chart</option>
+            <option value="line">Line Chart</option>
+            <option value="pie">Pie Chart</option>
+            <option value="scatter">Point Chart</option>
+        </select>
+    </div>
+    <div id="chart-error"></div>
+    <div class="chart-container">
+        <canvas id="sgpaChart"></canvas>
+    </div>
+
+    <script>
+        let chartInstance = null; // Store chart instance to destroy before re-rendering
+
+        function renderChart() {
+            const chartErrorDiv = document.getElementById('chart-error');
+            const chartType = document.getElementById('chartType').value;
+            const ctx = document.getElementById('sgpaChart').getContext('2d');
+            const chartData = JSON.parse(sessionStorage.getItem('chartData'));
+
+            // Clear previous chart
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            // Check for valid data
+            if (!chartData || !chartData.labels || !chartData.sgpas || chartData.labels.length === 0) {
+                chartErrorDiv.innerHTML = 'No SGPA data available. Please calculate SGPA in the main page first.';
+                return;
+            } else {
+                chartErrorDiv.innerHTML = '';
+            }
+
+            // Base dataset configuration
+            const dataset = {
+                label: 'SGPA per Semester',
+                data: chartData.sgpas,
+                backgroundColor: chartType === 'pie' ? [
+                    'rgba(255, 51, 51, 0.6)',   // Red
+                    'rgba(51, 153, 255, 0.6)',  // Blue
+                    'rgba(51, 255, 51, 0.6)',   // Green
+                    'rgba(255, 204, 51, 0.6)',  // Yellow
+                    'rgba(153, 51, 255, 0.6)'   // Purple
+                ] : 'rgba(255, 51, 51, 0.6)', // Red for other charts
+                borderColor: chartType === 'pie' ? [
+                    '#ff3333',
+                    '#3399ff',
+                    '#33ff33',
+                    '#ffcc33',
+                    '#9933ff'
+                ] : '#000000', // Black border for non-pie charts
+                borderWidth: chartType === 'pie' ? 1 : 1,
+                fill: chartType === 'line' ? false : true,
+                tension: chartType === 'line' ? 0.4 : 0 // Smooth lines for line chart
+            };
+
+            // Chart configuration
+            const config = {
+                type: chartType === 'scatter' ? 'scatter' : chartType,
+                data: {
+                    labels: chartData.labels,
+                    datasets: [dataset]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // Allow custom dimensions
+                    scales: chartType === 'pie' ? {} : {
+                        y: {
+                            beginAtZero: true,
+                            max: 10,
+                            title: { display: true, text: 'SGPA', color: '#ffffff' },
+                            ticks: { color: '#ffffff' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Semester', color: '#ffffff' },
+                            ticks: { color: '#ffffff' }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'SGPA by Semester',
+                            color: '#ff3333',
+                            font: { size: 20 } // Larger title font for larger chart
+                        }
+                    }
+                }
+            };
+
+            // Render chart
+            chartInstance = new Chart(ctx, config);
+        }
+
+        // Render chart on page load
+        window.onload = renderChart;
+    </script>
+</body>
+</html>
